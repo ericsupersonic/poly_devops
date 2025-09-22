@@ -29,8 +29,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install pytest # Устанавливаем pytest для запуска тестов
-          pip install flake8 # Установка Flake8  для проверки стиля кода
+
       # Шаг 4: Запускаем SAST-сканер (Bandit) для анализа исходного кода
       - name: Run Bandit SAST Scan
         run: |
@@ -76,18 +75,30 @@ jobs:
           exit-code: '1' # Пайплайн упадет, если Trivy найдет уязвимости
           ignore-unfixed: true # Игнорировать уязвимости, для которых нет фикса
           severity: 'HIGH,CRITICAL' # Проверять только на критические уязвимости
-      # Задание 2. Добавление Flake8 
-      - name: Run Flake8  
-        run: |
-          flake8 . --output-file=flake8_report.txt || true
-
-      - name: Upload Flake8 report
-        uses: actions/upload-artifact@v4
-        with:
-          name: flake8-report
-          path: flake8_report.txt
-
-      # Шаг 6: Запускаем наши unit-тесты
-      - name: Run Tests with pytest
-        run: |
-          python -m pytest tests/ -v
+       # Задание 3. Задача после выполнения security-scan      
+  code-quality:
+    runs-on: ubuntu-latest
+    needs: security-scan
+    steps:
+        - name: Checkout code
+          uses: actions/checkout@v4
+        - name: Set up Python
+          uses: actions/setup-python@v5
+          with:
+            python-version: '3.10' 
+        - name: Install dependencies
+          run: |
+            python -m pip install --upgrade pip
+            pip install -r requirements.txt
+            pip install pytest, flake8
+        - name: Run Flake8
+          run: |
+            flake8 . --output-file=flake8_report.txt || true
+        - name: Upload Flake8 report
+          uses: actions/upload-artifact@v4
+          with:
+            name: flake8-report
+            path: flake8_report.txt
+        - name: Run Tests with pytest
+          run: |
+            python -m pytest tests/ -v
