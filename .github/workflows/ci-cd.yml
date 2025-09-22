@@ -41,8 +41,15 @@ jobs:
           # --severity-level high - показывать только уязвимости уровня HIGH
           # --confidence-level high - показывать только уязвимости с высоким уровнем достоверности
           # -f json -o ... - вывести результат в файл в формате JSON
+          # 
           # || true - костыль, чтобы шаг не "падал" при найденных уязвимостях
-
+      # Задание 1. Сохранить файл отчета 
+      - name: Upload Bandit report
+        uses: actions/upload-artifact@v3
+        with:
+          name: bandit-report
+          path: bandit_results.json
+        
       # Шаг 4.1: Анализируем отчет Bandit и "валим" пайплайн при критических уязвимостях
       - name: Check Bandit Results
         id: bandit-check
